@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Years Are Short",
+  "version": "1.0.0",
+  "description": "A mindful new tab experience combining daily intention-setting with mortality visualization.",
+  "permissions": ["storage"],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  }
+}
