@@ -1,10 +1,10 @@
 // ===== Constants =====
 const DEFAULT_NON_NEGOTIABLES = [
-  { id: generateId(), label: 'Morning routine', order: 0 },
-  { id: generateId(), label: 'Exercise', order: 1 },
-  { id: generateId(), label: 'Deep work', order: 2 },
-  { id: generateId(), label: 'Connect with loved one', order: 3 },
-  { id: generateId(), label: 'Evening reflection', order: 4 }
+  { id: 'default-morning-routine', label: 'Morning routine', order: 0 },
+  { id: 'default-exercise', label: 'Exercise', order: 1 },
+  { id: 'default-deep-work', label: 'Deep work', order: 2 },
+  { id: 'default-connect', label: 'Connect with loved one', order: 3 },
+  { id: 'default-reflection', label: 'Evening reflection', order: 4 }
 ];
 
 const MAX_ITEMS = 10;
@@ -108,6 +108,91 @@ function getDayData(dateStr) {
   return dailyData[dateStr];
 }
 
+function getCompletionRate(dateStr) {
+  const dayData = dailyData[dateStr];
+  if (!dayData) return 0;
+
+  // Count completed non-negotiables
+  let completed = 0;
+  let total = nonNegotiables.length;
+
+  nonNegotiables.forEach(item => {
+    if (dayData.checklist[item.id]) completed++;
+  });
+
+  // Include highlight if it has text
+  if (dayData.highlight.text) {
+    total++;
+    if (dayData.highlight.completed) completed++;
+  }
+
+  return total > 0 ? completed / total : 0;
+}
+
+function getDateFromWeekIndex(weekIndex, birthDate) {
+  const birth = new Date(birthDate);
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  return new Date(birth.getTime() + weekIndex * msPerWeek);
+}
+
+function getWeeklyCompletion(weekIndex, birthDate) {
+  const weekStart = getDateFromWeekIndex(weekIndex, birthDate);
+  let totalRate = 0;
+  let daysWithData = 0;
+
+  for (let day = 0; day < 7; day++) {
+    const date = new Date(weekStart);
+    date.setDate(date.getDate() + day);
+    const dateStr = formatDate(date);
+
+    if (dailyData[dateStr]) {
+      totalRate += getCompletionRate(dateStr);
+      daysWithData++;
+    }
+  }
+
+  return daysWithData > 0 ? totalRate / daysWithData : 0;
+}
+
+// ===== Theme Toggle =====
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeToggle(savedTheme);
+}
+
+function updateThemeToggle(theme) {
+  const toggle = document.getElementById('theme-toggle');
+  if (!toggle) return;
+
+  const options = toggle.querySelectorAll('.theme-toggle-option');
+  options.forEach(option => {
+    if (option.dataset.theme === theme) {
+      option.classList.add('active');
+    } else {
+      option.classList.remove('active');
+    }
+  });
+}
+
+function setupThemeToggle() {
+  const toggle = document.getElementById('theme-toggle');
+  if (!toggle) return;
+
+  toggle.addEventListener('click', (e) => {
+    const option = e.target.closest('.theme-toggle-option');
+    if (!option) return;
+
+    const theme = option.dataset.theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    updateThemeToggle(theme);
+  });
+}
+
+// Initialize theme immediately
+initTheme();
+
 // ===== DOM Elements =====
 const elements = {
   onboardingModal: document.getElementById('onboarding-modal'),
@@ -125,6 +210,7 @@ const elements = {
   nextDay: document.getElementById('next-day'),
   currentDate: document.getElementById('current-date'),
   todayIndicator: document.getElementById('today-indicator'),
+  todayBtn: document.getElementById('today-btn'),
   highlightCheckbox: document.getElementById('highlight-checkbox'),
   highlightInput: document.getElementById('highlight-input'),
   nonNegotiablesList: document.getElementById('non-negotiables-list'),
@@ -214,11 +300,13 @@ function updateDateNavigation() {
   // Update date display
   elements.currentDate.textContent = formatDisplayDate(currentViewDate);
 
-  // Show/hide today badge
+  // Show/hide today badge and today button
   if (isToday(currentViewDate)) {
     elements.todayIndicator.classList.remove('hidden');
+    elements.todayBtn.classList.add('hidden');
   } else {
     elements.todayIndicator.classList.add('hidden');
+    elements.todayBtn.classList.remove('hidden');
   }
 
   // Enable/disable nav buttons
@@ -242,6 +330,12 @@ elements.prevDay.addEventListener('click', () => {
 
 elements.nextDay.addEventListener('click', () => {
   currentViewDate = addDays(currentViewDate, 1);
+  updateDateNavigation();
+  renderDailyContent();
+});
+
+elements.todayBtn.addEventListener('click', () => {
+  currentViewDate = new Date();
   updateDateNavigation();
   renderDailyContent();
 });
@@ -456,16 +550,33 @@ function renderMoriGrid() {
 
       const weekIndex = year * 52 + week;
 
+      let completionRate = 0;
       if (weekIndex < stats.weeksLived) {
         cell.classList.add('lived');
+        completionRate = getWeeklyCompletion(weekIndex, settings.birthDate);
+        // Apply stepped opacity based on completion rate
+        // 0-30% → 30% opacity, 30-50% → 50%, 50-70% → 70%, 70-100% → 100%
+        let opacity = 0.3; // minimum for no/low completion
+        if (completionRate > 0.7) {
+          opacity = 1.0;
+        } else if (completionRate > 0.5) {
+          opacity = 0.7;
+        } else if (completionRate > 0.3) {
+          opacity = 0.5;
+        }
+        cell.style.background = `rgba(201, 166, 107, ${opacity})`;
       } else if (weekIndex === stats.weeksLived) {
         cell.classList.add('current');
+        completionRate = getWeeklyCompletion(weekIndex, settings.birthDate);
       } else {
         cell.classList.add('future');
       }
 
       cell.addEventListener('mouseenter', (e) => {
-        tooltip.textContent = `Year ${year + 1}, Week ${week + 1}`;
+        const completionText = weekIndex <= stats.weeksLived && completionRate > 0
+          ? ` - ${Math.round(completionRate * 100)}% complete`
+          : '';
+        tooltip.textContent = `Year ${year + 1}, Week ${week + 1}${completionText}`;
         tooltip.style.display = 'block';
         tooltip.style.left = e.pageX + 10 + 'px';
         tooltip.style.top = e.pageY + 10 + 'px';
@@ -498,6 +609,58 @@ function renderDailyContent() {
   renderNonNegotiables();
 }
 
+// ===== Falling Leaves Animation =====
+function createFallingLeaves() {
+  const container = document.createElement('div');
+  container.className = 'falling-leaves';
+  document.body.appendChild(container);
+
+  const leafCount = 7; // Small number for subtle effect
+
+  for (let i = 0; i < leafCount; i++) {
+    createLeaf(container, i);
+  }
+}
+
+function createLeaf(container, index) {
+  const leaf = document.createElement('div');
+  leaf.className = 'leaf';
+
+  // Start from top-right corner (where tree is) - 70-95% of screen width
+  const startX = 70 + Math.random() * 25;
+  leaf.style.left = startX + '%';
+
+  // Start lower on screen - 10-25% from top (where branches are)
+  const startY = 10 + Math.random() * 15;
+  leaf.style.top = startY + '%';
+
+  // Random size
+  const size = 12 + Math.random() * 12;
+  leaf.style.width = size + 'px';
+  leaf.style.height = size + 'px';
+
+  // Random perspective transforms - limited so leaf points downward
+  const rotateX = Math.random() * 30 - 15; // -15 to 15 degrees (slight tilt)
+  const rotateY = Math.random() * 30 - 15; // -15 to 15 degrees (slight tilt)
+  const rotateZ = Math.random() * 40 - 20; // -20 to 20 degrees (slight rotation, keeps stem up)
+  leaf.style.setProperty('--rotateX', rotateX + 'deg');
+  leaf.style.setProperty('--rotateY', rotateY + 'deg');
+  leaf.style.setProperty('--rotateZ', rotateZ + 'deg');
+
+  // Random animation duration and delay
+  const fallDuration = 15 + Math.random() * 20; // 15-35 seconds
+  const swayDuration = 3 + Math.random() * 4; // 3-7 seconds for sway
+  const delay = Math.random() * 8; // 0-8 second random delay
+  leaf.style.animationDuration = fallDuration + 's, ' + swayDuration + 's';
+  leaf.style.animationDelay = delay + 's, 0s';
+
+  // Subtle sway as leaves fall
+  const swayAmount = 20 + Math.random() * 40;
+  leaf.style.setProperty('--sway', swayAmount + 'px');
+
+  container.appendChild(leaf);
+}
+
 // ===== Initialize App =====
 async function initializeApp() {
   await loadData();
@@ -509,6 +672,12 @@ async function initializeApp() {
 
   elements.onboardingModal.classList.add('hidden');
   elements.mainContent.classList.remove('hidden');
+
+  // Setup theme toggle
+  setupThemeToggle();
+
+  // Create falling leaves animation
+  createFallingLeaves();
 
   // Set current view date to today
   currentViewDate = new Date();
@@ -533,3 +702,48 @@ document.addEventListener('keydown', (e) => {
 
 // ===== Start App =====
 initializeApp();
+
+// ===== TEST DATA GENERATOR (Remove before production) =====
+// Run populateTestData() in browser console to generate sample data
+window.populateTestData = async function(daysBack = 90) {
+  const today = new Date();
+
+  for (let i = 1; i <= daysBack; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = formatDate(date);
+
+    // Random completion rate (weighted towards higher completion)
+    const completionChance = Math.random();
+    const checklist = {};
+
+    nonNegotiables.forEach(item => {
+      // 70% chance of completing each item
+      checklist[item.id] = Math.random() < 0.7;
+    });
+
+    // Random highlight
+    const hasHighlight = Math.random() < 0.8;
+    const highlightCompleted = hasHighlight && Math.random() < 0.6;
+
+    dailyData[dateStr] = {
+      highlight: {
+        text: hasHighlight ? 'Test highlight for ' + dateStr : '',
+        completed: highlightCompleted
+      },
+      checklist
+    };
+  }
+
+  await saveDailyData();
+  renderMoriGrid();
+  console.log(`Generated test data for ${daysBack} days. Refresh to see changes.`);
+};
+
+// Run clearTestData() to remove all daily data
+window.clearTestData = async function() {
+  dailyData = {};
+  await saveDailyData();
+  renderMoriGrid();
+  console.log('All daily data cleared.');
+};
