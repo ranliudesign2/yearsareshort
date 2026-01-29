@@ -564,7 +564,8 @@ function renderMoriGrid() {
         } else if (completionRate > 0.3) {
           opacity = 0.5;
         }
-        cell.style.background = `rgba(201, 166, 107, ${opacity})`;
+        // Use CSS variable with opacity
+        cell.style.background = `color-mix(in srgb, var(--accent) ${opacity * 100}%, transparent)`;
       } else if (weekIndex === stats.weeksLived) {
         cell.classList.add('current');
         completionRate = getWeeklyCompletion(weekIndex, settings.birthDate);
@@ -626,16 +627,20 @@ function createLeaf(container, index) {
   const leaf = document.createElement('div');
   leaf.className = 'leaf';
 
+  // Randomly pick one of three leaf variants
+  const leafVariant = Math.floor(Math.random() * 3) + 1;
+  leaf.classList.add('leaf-' + leafVariant);
+
   // Start from top-right corner (where tree is) - 70-95% of screen width
   const startX = 70 + Math.random() * 25;
   leaf.style.left = startX + '%';
 
   // Start lower on screen - 10-25% from top (where branches are)
-  const startY = 10 + Math.random() * 15;
+  const startY = 20 + Math.random() * 15;
   leaf.style.top = startY + '%';
 
   // Random size
-  const size = 12 + Math.random() * 12;
+  const size = 18 + Math.random() * 18;
   leaf.style.width = size + 'px';
   leaf.style.height = size + 'px';
 
