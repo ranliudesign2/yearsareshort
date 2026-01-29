@@ -515,18 +515,15 @@ function renderMoriGrid() {
 
   const lifeExpectancy = stats.lifeExpectancy;
 
-  // Calculate dynamic cell size to fit entire grid on screen
-  // Grid is: 52 columns (weeks) x years rows
+  // Calculate dynamic cell size based on available width
+  // Grid is: 52 columns (weeks) x years rows - allow vertical scrolling
   const gridContainer = elements.moriGrid.parentElement;
   const availableWidth = gridContainer.clientWidth;
-  const availableHeight = gridContainer.clientHeight;
 
   const gapSize = 1;
 
-  // Calculate cell size based on both dimensions
-  const cellSizeByWidth = Math.floor((availableWidth - (51 * gapSize)) / 52);
-  const cellSizeByHeight = Math.floor((availableHeight - ((lifeExpectancy - 1) * gapSize)) / lifeExpectancy);
-  const cellSize = Math.max(3, Math.min(cellSizeByWidth, cellSizeByHeight));
+  // Calculate cell size based on width only - allow vertical scroll
+  const cellSize = Math.max(4, Math.floor((availableWidth - (51 * gapSize)) / 52));
 
   // Apply grid template: 52 columns x years rows
   elements.moriGrid.style.gridTemplateColumns = `repeat(52, ${cellSize}px)`;
