@@ -51,6 +51,39 @@
       </div>
 
       <button id="save-settings-btn" class="btn-primary">Save Changes</button>
+
+      <div class="settings-divider"></div>
+
+      <div class="data-management">
+        <h3 class="data-management-title">Data Management</h3>
+        <p class="data-management-hint">Export your data for backup or transfer to another device.</p>
+
+        <div class="export-buttons">
+          <button id="export-json-btn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 10V2M8 10L5 7M8 10L11 7M2 14H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Export (JSON)
+          </button>
+          <button id="export-csv-btn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 10V2M8 10L5 7M8 10L11 7M2 14H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Export (CSV)
+          </button>
+        </div>
+
+        <div class="import-section">
+          <label class="btn-secondary import-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 2V10M8 2L5 5M8 2L11 5M2 14H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Import Data
+            <input type="file" id="import-file-input" accept=".json" hidden>
+          </label>
+          <span class="import-hint">JSON files only</span>
+        </div>
+      </div>
     </div>
   </div>
 

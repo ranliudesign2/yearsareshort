@@ -219,7 +219,10 @@ const elements = {
   statAge: document.getElementById('stat-age'),
   statWeeksLived: document.getElementById('stat-weeks-lived'),
   statWeeksRemaining: document.getElementById('stat-weeks-remaining'),
-  statPercentage: document.getElementById('stat-percentage')
+  statPercentage: document.getElementById('stat-percentage'),
+  exportJsonBtn: document.getElementById('export-json-btn'),
+  exportCsvBtn: document.getElementById('export-csv-btn'),
+  importFileInput: document.getElementById('import-file-input')
 };
 
 // ===== Onboarding =====
@@ -289,6 +292,166 @@ elements.saveSettingsBtn.addEventListener('click', async () => {
 elements.settingsModal.addEventListener('click', (e) => {
   if (e.target === elements.settingsModal) {
     elements.settingsModal.classList.add('hidden');
+  }
+});
+
+// ===== Data Export/Import =====
+function exportDataAsJSON() {
+  // Get current theme from the DOM
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    settings: {
+      birthDate: settings.birthDate,
+      lifeExpectancy: settings.lifeExpectancy,
+      theme: currentTheme
+    },
+    nonNegotiables: nonNegotiables,
+    dailyData: dailyData
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `years-are-short-backup-${formatDate(new Date())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportDataAsCSV() {
+  // Get all unique dates from dailyData
+  const dates = Object.keys(dailyData).sort();
+
+  if (dates.length === 0) {
+    alert('No data to export yet. Start tracking your days first!');
+    return;
+  }
+
+  // Sort tasks by order
+  const sortedTasks = [...nonNegotiables].sort((a, b) => a.order - b.order);
+
+  // Build CSV header with actual task names
+  let headers = ['Date', 'Highlight', 'Highlight Completed'];
+  sortedTasks.forEach((task, i) => {
+    headers.push(`Task ${i + 1}: ${task.label}`, `Task ${i + 1} Completed`);
+  });
+
+  // Build CSV rows
+  const rows = [headers.join(',')];
+
+  for (const date of dates) {
+    const day = dailyData[date];
+    // Handle highlight as object { text, completed } or legacy string format
+    const highlightText = typeof day.highlight === 'object' ? (day.highlight.text || '') : (day.highlight || '');
+    const highlightCompleted = typeof day.highlight === 'object' ? day.highlight.completed : day.highlightCompleted;
+    const row = [
+      date,
+      `"${highlightText.replace(/"/g, '""')}"`,
+      highlightCompleted ? 'true' : 'false'
+    ];
+
+    // Get completion status from checklist by task ID
+    const checklist = day.checklist || {};
+    sortedTasks.forEach(task => {
+      row.push(`"${task.label.replace(/"/g, '""')}"`);
+      row.push(checklist[task.id] ? 'true' : 'false');
+    });
+
+    rows.push(row.join(','));
+  }
+
+  const csvContent = rows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `years-are-short-data-${formatDate(new Date())}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function importData(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        // Validate the data structure
+        if (!data.settings || !data.settings.birthDate) {
+          throw new Error('Invalid backup file: missing settings');
+        }
+
+        // Confirm import
+        const confirmed = confirm(
+          'This will replace all your current data with the imported data. ' +
+          'Are you sure you want to continue?'
+        );
+
+        if (!confirmed) {
+          resolve(false);
+          return;
+        }
+
+        // Import settings
+        settings = {
+          ...settings,
+          birthDate: data.settings.birthDate,
+          lifeExpectancy: data.settings.lifeExpectancy || 80,
+          theme: data.settings.theme || 'dark',
+          setupComplete: true
+        };
+        await saveSettings(settings);
+
+        // Import non-negotiables
+        if (data.nonNegotiables && Array.isArray(data.nonNegotiables)) {
+          nonNegotiables = data.nonNegotiables;
+          await saveNonNegotiables();
+        }
+
+        // Import daily data
+        if (data.dailyData && typeof data.dailyData === 'object') {
+          dailyData = data.dailyData;
+          await saveDailyData();
+        }
+
+        alert('Data imported successfully! The page will now reload.');
+
+        // Force page reload to ensure clean state
+        window.location.reload();
+        resolve(true);
+
+      } catch (error) {
+        alert('Error importing data: ' + error.message);
+        reject(error);
+      }
+    };
+
+    reader.onerror = () => {
+      alert('Error reading file');
+      reject(new Error('Error reading file'));
+    };
+
+    reader.readAsText(file);
+  });
+}
+
+// Export/Import event listeners
+elements.exportJsonBtn.addEventListener('click', exportDataAsJSON);
+elements.exportCsvBtn.addEventListener('click', exportDataAsCSV);
+elements.importFileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    await importData(file);
+    e.target.value = ''; // Reset input
   }
 });
 

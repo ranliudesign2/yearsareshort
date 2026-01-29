@@ -183,6 +183,83 @@ body {
   transform: scale(0.98);
 }
 
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-surface);
+  border-color: var(--text-muted);
+}
+
+.btn-secondary svg {
+  flex-shrink: 0;
+}
+
+/* ===== Settings Data Management ===== */
+.settings-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+.data-management {
+  margin-top: 8px;
+}
+
+.data-management-title {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.data-management-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.export-buttons .btn-secondary {
+  flex: 1;
+  justify-content: center;
+}
+
+.import-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.import-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.import-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 /* ===== Main Content ===== */
 #main-content {
   display: flex;
