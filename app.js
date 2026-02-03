@@ -202,13 +202,6 @@ function showBirthdayCelebration(age) {
   });
 }
 
-// Test function for birthday celebration
-window.testBirthday = function(age = 30) {
-  localStorage.removeItem('birthdayShown');
-  showBirthdayCelebration(age);
-  console.log('Birthday celebration triggered! Click to dismiss.');
-};
-
 // ===== Animated Stats =====
 function animateValue(element, start, end, duration = 500) {
   const startTime = performance.now();
@@ -1240,48 +1233,3 @@ document.addEventListener('keydown', (e) => {
 
 // ===== Start App =====
 initializeApp();
-
-// ===== TEST DATA GENERATOR (Remove before production) =====
-// Run populateTestData() in browser console to generate sample data
-window.populateTestData = async function(daysBack = 90) {
-  const today = new Date();
-
-  for (let i = 1; i <= daysBack; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateStr = formatDate(date);
-
-    // Random completion rate (weighted towards higher completion)
-    const completionChance = Math.random();
-    const checklist = {};
-
-    nonNegotiables.forEach(item => {
-      // 70% chance of completing each item
-      checklist[item.id] = Math.random() < 0.7;
-    });
-
-    // Random highlight
-    const hasHighlight = Math.random() < 0.8;
-    const highlightCompleted = hasHighlight && Math.random() < 0.6;
-
-    dailyData[dateStr] = {
-      highlight: {
-        text: hasHighlight ? 'Test highlight for ' + dateStr : '',
-        completed: highlightCompleted
-      },
-      checklist
-    };
-  }
-
-  await saveDailyData();
-  renderMoriGrid();
-  console.log(`Generated test data for ${daysBack} days. Refresh to see changes.`);
-};
-
-// Run clearTestData() to remove all daily data
-window.clearTestData = async function() {
-  dailyData = {};
-  await saveDailyData();
-  renderMoriGrid();
-  console.log('All daily data cleared.');
-};
