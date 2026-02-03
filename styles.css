@@ -28,6 +28,7 @@
   --accent-dim: rgba(240, 181, 57, 0.25);
   --border: rgba(58, 54, 50, 0.08);
   --success: #6b8b6b;
+  --accent-dark: #b56b14;
 }
 
 /* ===== Reset & Base ===== */
@@ -59,6 +60,12 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+/* Disable transitions during theme switch */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
 }
 
 /* ===== Modal Styles ===== */
@@ -646,7 +653,7 @@ body {
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
@@ -1137,12 +1144,16 @@ body {
   color: var(--accent);
   margin-bottom: 2px;
 }
+[data-theme="light"] .stat-value {
+  color: var(--text-secondary);
+
+}
 
 .stat-label {
   font-size: clamp(0.5rem, 1.2vw, 0.6rem);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 @media (max-width: 480px) {
@@ -1156,17 +1167,16 @@ body {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   width: 100%;
 }
 
 .mori-grid {
   display: grid;
   gap: 1px;
-  width: 100%;
+  width: fit-content;
 }
 
 .week-cell {
@@ -1242,4 +1252,351 @@ body {
 .readonly .add-item-btn,
 .readonly .delete-btn {
   display: none;
+}
+
+/* ===== Delightful Animations ===== */
+
+/* Checkbox wrapper for ripple effect */
+.checkbox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Checkbox Animation - Satisfying bounce and check draw */
+.checkbox {
+  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.checkbox:active {
+  transform: scale(0.9);
+}
+
+.checkbox.checking {
+  animation: checkBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(1); }
+  20% { transform: scale(0.8); }
+  40% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
+  80% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.checkbox:checked::after {
+  animation: checkDraw 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes checkDraw {
+  0% {
+    clip-path: inset(0 100% 100% 0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.checklist-item .checkbox:checked::after {
+  animation: checkDraw 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/* Ripple effect element */
+.checkbox-ripple {
+  position: fixed;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.checkbox-ripple.animate {
+  animation: checkRipple 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes checkRipple {
+  0% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+/* Secondary ring pulse */
+.checkbox-ring {
+  position: fixed;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  transform: scale(1);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.checkbox-ring.animate {
+  animation: checkRing 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes checkRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* Input Focus Glow */
+.highlight-item {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+}
+
+.highlight-item:hover {
+  background: var(--bg-elevated);
+}
+
+.highlight-item:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-dim);
+}
+
+.checklist-item {
+  transition: background-color 0.2s, box-shadow 0.3s ease;
+}
+
+.checklist-item:focus-within {
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+/* Day Navigation Transitions */
+.focus-panel {
+  position: relative;
+}
+
+.daily-content-wrapper {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.daily-content-wrapper.transitioning-out {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.daily-content-wrapper.transitioning-in {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+/* Stat Number Animation */
+.stat-value {
+  transition: transform 0.3s ease;
+}
+
+.stat-value.counting {
+  animation: countPulse 0.3s ease;
+}
+
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Current Week Breathing Animation - Enhanced */
+.week-cell.current {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 8px var(--accent-dim);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent-dim);
+    transform: scale(1.05);
+  }
+}
+
+/* Sparkle effect for highlight completion */
+.sparkle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: sparkle 0.8s ease-out forwards;
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 1;
+    transform: scale(0) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) translate(var(--tx), var(--ty));
+  }
+}
+
+/* Birthday Celebration */
+.birthday-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.birthday-card {
+  background: var(--bg-surface);
+  border-radius: 24px;
+  padding: 48px 64px;
+  text-align: center;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 60px var(--accent-dim);
+  animation: birthdayBounce 0.6s ease;
+  max-width: 90%;
+}
+
+@keyframes birthdayBounce {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.birthday-emoji {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: birthdayWiggle 0.5s ease infinite;
+}
+
+@keyframes birthdayWiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.birthday-title {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.birthday-message {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.birthday-age {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.birthday-close {
+  padding: 12px 32px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.birthday-close:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* Enhanced Tooltip for Week Summary */
+.tooltip {
+  max-width: 250px;
+  line-height: 1.5;
+}
+
+.tooltip-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.tooltip-stats {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-bar {
+  height: 4px;
+  background: var(--bg-primary);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.tooltip-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Complete day celebration glow */
+.focus-panel.day-complete {
+  animation: dayCompleteGlow 2s ease;
+}
+
+@keyframes dayCompleteGlow {
+  0%, 100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 30px var(--accent-dim), inset 0 0 20px var(--accent-dim);
+  }
 }
