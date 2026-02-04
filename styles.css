@@ -84,7 +84,7 @@ body {
   background: var(--bg-surface);
   border-radius: 16px;
   padding: 48px;
-  max-width: 440px;
+  max-width: 480px;
   width: 90%;
   border: 1px solid var(--border);
 }
@@ -265,6 +265,37 @@ body {
 .import-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+/* ===== Support Section ===== */
+.support-section {
+  margin-top: 8px;
+}
+
+.support-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.support-btn {
+  flex: 1;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-coffee {
+  background: linear-gradient(135deg, #ffdd00 0%, #ffaa00 100%);
+  border-color: #e6a800;
+  color: #1a1a1a;
+}
+
+.btn-coffee:hover {
+  background: linear-gradient(135deg, #ffee33 0%, #ffbb33 100%);
+  border-color: #cc9500;
+}
+
+.btn-coffee svg {
+  stroke: #1a1a1a;
 }
 
 /* ===== Main Content ===== */
@@ -655,6 +686,11 @@ body {
   letter-spacing: 0.08em;
   color: var(--text-secondary);
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.quote-attribution:hover {
+  color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {
@@ -880,6 +916,71 @@ body {
   color: var(--text-secondary);
   margin-bottom: 16px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===== Info Icon & Tooltip ===== */
+.info-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: help;
+  transition: color 0.2s ease;
+}
+
+.info-icon:hover,
+.info-icon:focus {
+  color: var(--accent);
+  outline: none;
+}
+
+.info-icon svg {
+  display: block;
+}
+
+.info-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 220px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.info-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--bg-elevated);
+}
+
+.info-icon:hover .info-tooltip,
+.info-icon:focus .info-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ===== Daily Highlight ===== */
@@ -988,8 +1089,8 @@ body {
 }
 
 .checklist-item .checkbox {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border-color: var(--text-muted);
 }
 
@@ -1000,9 +1101,9 @@ body {
 
 .checklist-item .checkbox:checked::after {
   left: 5px;
-  top: 1px;
+  top: 2px;
   width: 5px;
-  height: 10px;
+  height: 9px;
 }
 
 .item-label {

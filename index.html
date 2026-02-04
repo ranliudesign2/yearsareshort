@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Years Are Short - A Mindful New Tab Experience</title>
+  <meta name="description" content="Replace your new tab with a life calendar and daily intention-setting. Make every day count.">
+  <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #141414;
+      --bg-surface: #1a1a1a;
+      --bg-elevated: #242424;
+      --text-primary: #e8e6e3;
+      --text-secondary: #a8a5a0;
+      --text-muted: #6b6965;
+      --accent: #c9a66b;
+      --accent-dim: rgba(201, 166, 107, 0.3);
+      --border: #2a2a2a;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .logo {
+      height: 48px;
+      margin-bottom: 32px;
+      filter: brightness(0) saturate(100%) invert(78%) sepia(23%) saturate(576%) hue-rotate(357deg) brightness(91%) contrast(88%);
+    }
+
+    .hero-headline {
+      font-family: var(--font-serif);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 300;
+      line-height: 1.2;
+      max-width: 700px;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .hero-headline em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    .hero-subheadline {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin-bottom: 40px;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px var(--accent-dim);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px var(--accent-dim);
+    }
+
+    .cta-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .hero-screenshot {
+      margin-top: 60px;
+      max-width: 1000px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-screenshot img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+
+    /* Features Section */
+    .features {
+      padding: 120px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    .feature {
+      text-align: center;
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+
+    .feature-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--accent);
+    }
+
+    .feature h3 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .feature p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 24px;
+    }
+
+    .footer-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-logo {
+      height: 32px;
+      filter: brightness(0) saturate(100%) invert(78%) sepia(23%) saturate(576%) hue-rotate(357deg) brightness(91%) contrast(88%);
+      opacity: 0.7;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-copyright {
+      width: 100%;
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .footer-copyright a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-copyright a:hover {
+      color: var(--accent);
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-headline,
+    .hero-subheadline,
+    .cta-button,
+    .hero-screenshot {
+      animation: fadeUp 0.8s ease forwards;
+    }
+
+    .hero-subheadline { animation-delay: 0.1s; }
+    .cta-button { animation-delay: 0.2s; }
+    .hero-screenshot { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <img src="icons/years-logo.svg" alt="Years Are Short" class="logo">
+
+    <h1 class="hero-headline">
+      The days are long,<br>but the <em>years are short</em>.
+    </h1>
+
+    <p class="hero-subheadline">
+      Replace your new tab with a life calendar and daily intention-setting. Make every day count.
+    </p>
+
+    <a href="YOUR_CHROME_STORE_URL" class="cta-button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="4"/>
+        <line x1="21.17" y1="8" x2="12" y2="8"/>
+        <line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
+        <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
+      </svg>
+      Add to Chrome — Free
+    </a>
+
+    <div class="hero-screenshot">
+      <img src="screenshot.png" alt="Years Are Short extension screenshot">
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M3 10h18"/>
+            <path d="M8 2v4M16 2v4"/>
+          </svg>
+        </div>
+        <h3>Life Calendar</h3>
+        <p>Visualize your life in weeks. See how far you've come and how much precious time remains. A gentle reminder to live intentionally.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h3>Daily Highlight</h3>
+        <p>Set one meaningful goal each day. Focus on what matters most and celebrate small wins with satisfying animations.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+        </div>
+        <h3>Non-Negotiables</h3>
+        <p>Track the daily habits that build your ideal life. Consistency compounds — see your progress reflected in your life grid.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <img src="icons/years-logo.svg" alt="Years Are Short" class="footer-logo">
+
+      <nav class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfGwXCznFXqizLPSFGLpM4fqXTZ-FzXNK80gpXoJYXDZwrArg/viewform" target="_blank" rel="noopener">Feedback</a>
+        <a href="https://tiptopjar.com/yearsareshort" target="_blank" rel="noopener">Support</a>
+        <a href="https://github.com/YOUR_USERNAME/yearsareshort" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <p class="footer-copyright">
+        Inspired by <a href="https://gretchenrubin.com/" target="_blank" rel="noopener">Gretchen Rubin's</a> quote. Built with care.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

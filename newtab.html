@@ -84,6 +84,27 @@
           <span class="import-hint">JSON files only</span>
         </div>
       </div>
+
+      <div class="settings-divider"></div>
+
+      <div class="support-section">
+        <h3 class="data-management-title">Support & Feedback</h3>
+        <p class="data-management-hint">Help make Years Are Short better.</p>
+        <div class="support-buttons">
+          <a id="feedback-link" href="#" target="_blank" rel="noopener" class="btn-secondary support-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M14 10.5V13.5C14 14.33 13.33 15 12.5 15H3.5C2.67 15 2 14.33 2 13.5V10.5M8 1V11M8 11L11.5 7.5M8 11L4.5 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 8 8)"/>
+            </svg>
+            Send Feedback
+          </a>
+          <a id="tipjar-link" href="#" target="_blank" rel="noopener" class="btn-secondary support-btn btn-coffee">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 5h9v7a2 2 0 01-2 2H4a2 2 0 01-2-2V5zM11 5h1.5a1.5 1.5 0 010 3H11M4 1v2M6.5 1v2M9 1v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Buy Me a Coffee
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -117,7 +138,7 @@
       <header class="hero">
         <div class="quote-container">
           <h1 class="hero-quote">The days are long, but the years are short.</h1>
-          <span class="quote-attribution">— Gretchen Rubin</span>
+          <a href="https://gretchenrubin.com/" target="_blank" rel="noopener" class="quote-attribution">— Gretchen Rubin</a>
         </div>
       </header>
     </div>
@@ -146,7 +167,16 @@
 
         <!-- Daily Highlight -->
         <div class="highlight-section">
-          <h2 class="section-title">Daily Highlight</h2>
+          <h2 class="section-title">
+            Daily Highlight
+            <span class="info-icon" tabindex="0" aria-label="What is Daily Highlight?">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 7V11M8 5V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="info-tooltip">The ONE thing that would make today feel successful. Focus on what matters most.</span>
+            </span>
+          </h2>
           <div class="highlight-item">
             <input type="checkbox" id="highlight-checkbox" class="checkbox">
             <input type="text" id="highlight-input" class="highlight-input" placeholder="What's your highlight for today?">
@@ -155,7 +185,16 @@
 
         <!-- Non-Negotiables -->
         <div class="non-negotiables-section">
-          <h2 class="section-title">Non-Negotiables</h2>
+          <h2 class="section-title">
+            Non-Negotiables
+            <span class="info-icon" tabindex="0" aria-label="What are Non-Negotiables?">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 7V11M8 5V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="info-tooltip">Daily habits you commit to no matter what. These build the foundation of an intentional life.</span>
+            </span>
+          </h2>
           <ul id="non-negotiables-list" class="checklist">
             <!-- Items will be dynamically inserted -->
           </ul>
@@ -201,6 +240,8 @@
   </main>
 
   <script src="lib/confetti.min.js"></script>
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

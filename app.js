@@ -1,3 +1,17 @@
+// ===== Verify utils.js is loaded =====
+(function checkUtilsLoaded() {
+  const requiredFunctions = [
+    'formatDate', 'formatDisplayDate', 'isToday', 'isFutureDate',
+    'isPastDate', 'addDays', 'daysDifference', 'calculateLifeStats',
+    'getDateFromWeekIndex', 'isBirthday', 'getCompletionRate',
+    'getWeeklyCompletion', 'getWeekSummary'
+  ];
+  const missing = requiredFunctions.filter(fn => typeof window[fn] !== 'function');
+  if (missing.length > 0) {
+    console.error('Missing utility functions from utils.js:', missing.join(', '));
+  }
+})();
+
 // ===== Constants =====
 const DEFAULT_NON_NEGOTIABLES = [
   { id: 'default-morning-routine', label: 'Morning routine', order: 0 },
@@ -47,6 +61,12 @@ function createConfetti(originX, originY) {
     shapes: ['star'],
     colors: colors
   };
+
+  // Check if confetti library is available
+  if (typeof confetti !== 'function') {
+    console.warn('Confetti library not loaded');
+    return;
+  }
 
   // First burst
   confetti({
@@ -160,11 +180,10 @@ function celebrateIfComplete() {
 }
 
 // ===== Birthday Celebration =====
-function isBirthday() {
+// Wrapper that uses utils.js isBirthday with app state
+function checkIsBirthday() {
   if (!settings || !settings.birthDate) return false;
-  const today = new Date();
-  const birthDate = new Date(settings.birthDate);
-  return today.getMonth() === birthDate.getMonth() && today.getDate() === birthDate.getDate();
+  return isBirthday(settings.birthDate);
 }
 
 function showBirthdayCelebration(age) {
@@ -231,49 +250,7 @@ function animateValue(element, start, end, duration = 500) {
   requestAnimationFrame(update);
 }
 
-function formatDate(date) {
-  return date.toISOString().split('T')[0];
-}
-
-function formatDisplayDate(date) {
-  const options = { weekday: 'long', month: 'short', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options);
-}
-
-function isToday(date) {
-  const today = new Date();
-  return formatDate(date) === formatDate(today);
-}
-
-function isFutureDate(date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const compareDate = new Date(date);
-  compareDate.setHours(0, 0, 0, 0);
-  return compareDate > today;
-}
-
-function isPastDate(date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const compareDate = new Date(date);
-  compareDate.setHours(0, 0, 0, 0);
-  return compareDate < today;
-}
-
-function addDays(date, days) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-function daysDifference(date1, date2) {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
-  return Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
-}
+// Date utility functions are imported from utils.js
 
 // ===== Storage Functions =====
 async function loadData() {
@@ -313,86 +290,31 @@ function getDayData(dateStr) {
       checklist: {}
     };
   }
-  return dailyData[dateStr];
-}
-
-function getCompletionRate(dateStr) {
+  // Migrate legacy data format: highlight was previously a string
   const dayData = dailyData[dateStr];
-  if (!dayData) return 0;
-
-  // Count completed non-negotiables
-  let completed = 0;
-  let total = nonNegotiables.length;
-
-  nonNegotiables.forEach(item => {
-    if (dayData.checklist[item.id]) completed++;
-  });
-
-  // Include highlight if it has text
-  if (dayData.highlight.text) {
-    total++;
-    if (dayData.highlight.completed) completed++;
+  if (typeof dayData.highlight === 'string') {
+    dayData.highlight = {
+      text: dayData.highlight,
+      completed: dayData.highlightCompleted || false
+    };
+    delete dayData.highlightCompleted;
+  } else if (!dayData.highlight) {
+    dayData.highlight = { text: '', completed: false };
   }
-
-  return total > 0 ? completed / total : 0;
+  return dayData;
 }
 
-function getDateFromWeekIndex(weekIndex, birthDate) {
-  const birth = new Date(birthDate);
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  return new Date(birth.getTime() + weekIndex * msPerWeek);
+// Wrapper functions that use utils.js with app state
+function getCompletionRateForDate(dateStr) {
+  return getCompletionRate(dailyData[dateStr], nonNegotiables);
 }
 
-function getWeeklyCompletion(weekIndex, birthDate) {
-  const weekStart = getDateFromWeekIndex(weekIndex, birthDate);
-  let totalRate = 0;
-  let daysWithData = 0;
-
-  for (let day = 0; day < 7; day++) {
-    const date = new Date(weekStart);
-    date.setDate(date.getDate() + day);
-    const dateStr = formatDate(date);
-
-    if (dailyData[dateStr]) {
-      totalRate += getCompletionRate(dateStr);
-      daysWithData++;
-    }
-  }
-
-  return daysWithData > 0 ? totalRate / daysWithData : 0;
+function getWeeklyCompletionForWeek(weekIndex, birthDateStr) {
+  return getWeeklyCompletion(weekIndex, birthDateStr, dailyData, nonNegotiables);
 }
 
-function getWeekSummary(weekIndex, birthDate) {
-  const weekStart = getDateFromWeekIndex(weekIndex, birthDate);
-  let daysTracked = 0;
-  let totalTasks = 0;
-  let completedTasks = 0;
-
-  for (let day = 0; day < 7; day++) {
-    const date = new Date(weekStart);
-    date.setDate(date.getDate() + day);
-    const dateStr = formatDate(date);
-
-    if (dailyData[dateStr]) {
-      daysTracked++;
-      const dayData = dailyData[dateStr];
-      nonNegotiables.forEach(item => {
-        totalTasks++;
-        if (dayData.checklist[item.id]) completedTasks++;
-      });
-      if (dayData.highlight && dayData.highlight.text) {
-        totalTasks++;
-        if (dayData.highlight.completed) completedTasks++;
-      }
-    }
-  }
-
-  return {
-    daysTracked,
-    totalTasks,
-    completedTasks,
-    completionRate: totalTasks > 0 ? completedTasks / totalTasks : 0
-  };
+function getWeekSummaryForWeek(weekIndex, birthDateStr) {
+  return getWeekSummary(weekIndex, birthDateStr, dailyData, nonNegotiables);
 }
 
 // ===== Theme Toggle =====
@@ -940,41 +862,16 @@ function escapeHtml(text) {
 }
 
 // ===== Memento Mori Grid =====
-function calculateLifeStats() {
+// Wrapper that uses utils.js calculateLifeStats with app state
+function getLifeStats() {
   if (!settings || !settings.birthDate) return null;
-
-  const birthDate = new Date(settings.birthDate);
-  const today = new Date();
-  const lifeExpectancy = settings.lifeExpectancy || 80;
-
-  // Calculate age
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  // Calculate weeks
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weeksLived = Math.floor((today - birthDate) / msPerWeek);
-  const totalWeeks = lifeExpectancy * 52;
-  const weeksRemaining = Math.max(0, totalWeeks - weeksLived);
-  const percentage = Math.min(100, (weeksLived / totalWeeks) * 100);
-
-  return {
-    age,
-    weeksLived,
-    weeksRemaining,
-    percentage,
-    totalWeeks,
-    lifeExpectancy
-  };
+  return calculateLifeStats(settings.birthDate, settings.lifeExpectancy);
 }
 
 let previousStats = null;
 
 function updateLifeStats(animate = false) {
-  const stats = calculateLifeStats();
+  const stats = getLifeStats();
   if (!stats) return;
 
   if (animate && previousStats) {
@@ -993,7 +890,7 @@ function updateLifeStats(animate = false) {
 }
 
 function renderMoriGrid() {
-  const stats = calculateLifeStats();
+  const stats = getLifeStats();
   if (!stats) return;
 
   elements.moriGrid.innerHTML = '';
@@ -1042,7 +939,7 @@ function renderMoriGrid() {
       let completionRate = 0;
       if (weekIndex < stats.weeksLived) {
         cell.classList.add('lived');
-        completionRate = getWeeklyCompletion(weekIndex, settings.birthDate);
+        completionRate = getWeeklyCompletionForWeek(weekIndex, settings.birthDate);
         // Apply stepped opacity based on completion rate
         // 0-30% → 30% opacity, 30-50% → 50%, 50-70% → 70%, 70-100% → 100%
         let opacity = 0.3; // minimum for no/low completion
@@ -1057,7 +954,7 @@ function renderMoriGrid() {
         cell.style.background = `color-mix(in srgb, var(--accent) ${opacity * 100}%, transparent)`;
       } else if (weekIndex === stats.weeksLived) {
         cell.classList.add('current');
-        completionRate = getWeeklyCompletion(weekIndex, settings.birthDate);
+        completionRate = getWeeklyCompletionForWeek(weekIndex, settings.birthDate);
       } else {
         cell.classList.add('future');
       }
@@ -1068,7 +965,7 @@ function renderMoriGrid() {
 
         if (weekIndex < stats.weeksLived) {
           // Past week - show completion data
-          const weekData = getWeekSummary(weekIndex, settings.birthDate);
+          const weekData = getWeekSummaryForWeek(weekIndex, settings.birthDate);
           if (weekData.daysTracked > 0) {
             tooltipHTML += `<div class="tooltip-stats">`;
             tooltipHTML += `${weekData.daysTracked} day${weekData.daysTracked > 1 ? 's' : ''} tracked`;
@@ -1080,7 +977,7 @@ function renderMoriGrid() {
           }
         } else if (weekIndex === stats.weeksLived) {
           // Current week
-          const weekData = getWeekSummary(weekIndex, settings.birthDate);
+          const weekData = getWeekSummaryForWeek(weekIndex, settings.birthDate);
           tooltipHTML += `<div class="tooltip-stats" style="color: var(--accent);">Current week</div>`;
           if (weekData.daysTracked > 0) {
             tooltipHTML += `<div class="tooltip-stats">${weekData.daysTracked} day${weekData.daysTracked > 1 ? 's' : ''} tracked this week</div>`;
@@ -1180,8 +1077,23 @@ function createLeaf(container, index) {
   container.appendChild(leaf);
 }
 
+// ===== Initialize Config URLs =====
+function initConfigUrls() {
+  if (typeof CONFIG === 'undefined') {
+    console.warn('CONFIG not loaded');
+    return;
+  }
+
+  const feedbackLink = document.getElementById('feedback-link');
+  const tipjarLink = document.getElementById('tipjar-link');
+
+  if (feedbackLink) feedbackLink.href = CONFIG.urls.feedback;
+  if (tipjarLink) tipjarLink.href = CONFIG.urls.tipJar;
+}
+
 // ===== Initialize App =====
 async function initializeApp() {
+  initConfigUrls();
   await loadData();
 
   if (!settings || !settings.setupComplete) {
@@ -1211,8 +1123,8 @@ async function initializeApp() {
   });
 
   // Check for birthday
-  if (isBirthday()) {
-    const stats = calculateLifeStats();
+  if (checkIsBirthday()) {
+    const stats = getLifeStats();
     if (stats) {
       setTimeout(() => showBirthdayCelebration(stats.age), 500);
     }
@@ -1232,4 +1144,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== Start App =====
-initializeApp();
+// Ensure DOM and scripts are fully loaded before initializing
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}

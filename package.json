@@ -1,0 +1,19 @@
+{
+  "name": "years-are-short",
+  "version": "1.0.0",
+  "description": "A mindful new tab experience combining daily intention-setting with mortality visualization.",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "verbose": true
+  }
+}
