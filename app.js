@@ -896,27 +896,52 @@ function renderMoriGrid() {
   elements.moriGrid.innerHTML = '';
 
   const lifeExpectancy = stats.lifeExpectancy;
+  // Total number of week-cells to render
+  const totalCells = lifeExpectancy * 52;
 
-  // Calculate dynamic cell size based on available width
-  // Grid is: 52 columns (weeks) x years rows - allow vertical scrolling
+  // Container measurements
   const gridContainer = elements.moriGrid.parentElement;
-  const availableWidth = gridContainer.clientWidth;
+  const availableWidth = Math.max(0, gridContainer.clientWidth);
+  const availableHeight = Math.max(0, gridContainer.clientHeight);
 
-  const gapSize = 1;
+  const gapSize = 1; // matches CSS gap
+  const MIN_CELL = 6; // minimal readable cell size in px
 
-  // Calculate cell size based on width (52 columns)
-  const cellSizeByWidth = Math.floor((availableWidth - (51 * gapSize)) / 52);
+  // Decide optimal number of columns to maximize cell size while fitting both width and height.
+  // We search for the number of columns (1..maxCols) that yields the largest possible square size.
+  const maxColsByWidth = Math.max(1, Math.floor((availableWidth + gapSize) / (MIN_CELL + gapSize)));
+  const maxCols = Math.min(totalCells, maxColsByWidth);
 
-  // Calculate cell size based on height (lifeExpectancy rows)
-  const availableHeight = gridContainer.clientHeight;
-  const cellSizeByHeight = Math.floor((availableHeight - ((lifeExpectancy - 1) * gapSize)) / lifeExpectancy);
+  let best = { cols: Math.min(52, maxCols), cell: MIN_CELL, rows: Math.ceil(totalCells / Math.min(52, maxCols)) };
 
-  // Use smaller of width/height to fit both dimensions, with minimum of 4
-  const cellSize = Math.max(4, Math.min(cellSizeByWidth, cellSizeByHeight));
+  for (let cols = 1; cols <= maxCols; cols++) {
+    const rows = Math.ceil(totalCells / cols);
 
-  // Apply grid template: 52 columns x years rows
-  elements.moriGrid.style.gridTemplateColumns = `repeat(52, ${cellSize}px)`;
-  elements.moriGrid.style.gridTemplateRows = `repeat(${lifeExpectancy}, ${cellSize}px)`;
+    // cell size constrained by width and height
+    const cellByWidth = Math.floor((availableWidth - (cols - 1) * gapSize) / cols);
+    const cellByHeight = rows > 0 ? Math.floor((availableHeight - (rows - 1) * gapSize) / rows) : 0;
+
+    const effectiveCell = Math.min(cellByWidth, cellByHeight);
+
+    if (effectiveCell >= MIN_CELL && effectiveCell > best.cell) {
+      best = { cols, cell: effectiveCell, rows };
+    }
+  }
+
+  // If we didn't find a configuration >= MIN_CELL (e.g., very small viewport), pick the best possible by width
+  if (best.cell === MIN_CELL) {
+    // Try to maximize by width even if height is tight
+    const fallbackCols = Math.min(totalCells, Math.max(1, Math.floor((availableWidth + gapSize) / (MIN_CELL + gapSize))));
+    best.cols = Math.max(1, fallbackCols);
+    best.rows = Math.ceil(totalCells / best.cols);
+    const cellByWidth = Math.floor((availableWidth - (best.cols - 1) * gapSize) / best.cols);
+    const cellByHeight = best.rows > 0 ? Math.floor((availableHeight - (best.rows - 1) * gapSize) / best.rows) : MIN_CELL;
+    best.cell = Math.max(2, Math.min(cellByWidth, cellByHeight));
+  }
+
+  // Apply computed grid template
+  elements.moriGrid.style.gridTemplateColumns = `repeat(${best.cols}, ${best.cell}px)`;
+  elements.moriGrid.style.gridTemplateRows = `repeat(${best.rows}, ${best.cell}px)`;
 
   // Create tooltip element
   let tooltip = document.querySelector('.tooltip');
