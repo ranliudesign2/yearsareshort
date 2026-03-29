@@ -1132,6 +1132,21 @@ async function initializeApp() {
   // Setup theme toggle
   setupThemeToggle();
 
+  // Mobile menu toggle
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const topControls = document.querySelector('.top-controls');
+  if (mobileMenuBtn && topControls) {
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = topControls.classList.toggle('open');
+      mobileMenuBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', () => {
+      topControls.classList.remove('open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
   // Create falling leaves animation
   createFallingLeaves();
 
